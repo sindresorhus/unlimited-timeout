@@ -1,0 +1,52 @@
+{
+	"name": "unlimited-timeout",
+	"version": "0.0.0",
+	"description": "setTimeout and setInterval that work with delays longer than 24.8 days",
+	"license": "MIT",
+	"repository": "sindresorhus/unlimited-timeout",
+	"funding": "https://github.com/sponsors/sindresorhus",
+	"author": {
+		"name": "Sindre Sorhus",
+		"email": "sindresorhus@gmail.com",
+		"url": "https://sindresorhus.com"
+	},
+	"type": "module",
+	"exports": {
+		"types": "./index.d.ts",
+		"default": "./index.js"
+	},
+	"sideEffects": false,
+	"engines": {
+		"node": ">=20"
+	},
+	"scripts": {
+		"test": "xo && node --test && tsd"
+	},
+	"files": [
+		"index.js",
+		"index.d.ts"
+	],
+	"keywords": [
+		"timeout",
+		"settimeout",
+		"setinterval",
+		"unlimited",
+		"long",
+		"extended",
+		"delay",
+		"timer",
+		"overflow",
+		"max",
+		"maximum",
+		"large",
+		"big",
+		"infinite",
+		"schedule",
+		"safe"
+	],
+	"devDependencies": {
+		"@types/node": "^24.8.1",
+		"tsd": "^0.33.0",
+		"xo": "^1.2.2"
+	}
+}
