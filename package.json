@@ -1,6 +1,6 @@
 {
 	"name": "unlimited-timeout",
-	"version": "0.0.0",
+	"version": "0.1.0",
 	"description": "setTimeout and setInterval that work with delays longer than 24.8 days",
 	"license": "MIT",
 	"repository": "sindresorhus/unlimited-timeout",
