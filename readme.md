@@ -146,3 +146,4 @@ Maximum safe timeout value for `setTimeout` in JavaScript (2^31-1 milliseconds).
 ## Related
 
 - [delay](https://github.com/sindresorhus/delay) - Delay a promise a specified amount of time
+- [setBigTimeout](https://git.sr.ht/~evanhahn/setBigTimeout) - Similar module allowing arbitrarily long delays
