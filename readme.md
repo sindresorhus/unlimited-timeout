@@ -2,7 +2,7 @@
 
 > `setTimeout` and `setInterval` that work with delays longer than 24.8 days
 
-JavaScript's built-in `setTimeout` and `setInterval` have a maximum delay of 2^31-1 milliseconds (approximately 24.8 days). Attempting to use a longer delay causes the timer fires immediately with a 1ms delay instead of waiting for the intended duration.
+JavaScript's built-in `setTimeout` and `setInterval` have a maximum delay of 2^31-1 milliseconds (approximately 24.8 days). Attempting to use a longer delay causes the timer to fire immediately with a 1ms delay instead of waiting for the intended duration.
 
 This package provides drop-in replacements that handle arbitrarily long delays by automatically breaking them into smaller chunks.
 
