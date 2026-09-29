@@ -34,7 +34,7 @@ export function setTimeout(callback, delay, ...arguments_) {
 
 	// Treat delays beyond MAX_SAFE_INTEGER as Infinity (precision loss)
 	// and positive Infinity means wait forever (never fire)
-	if (delay === Number.POSITIVE_INFINITY || delay > Number.MAX_SAFE_INTEGER) {
+	if (delay === Infinity || delay > Number.MAX_SAFE_INTEGER) {
 		return timeout;
 	}
 
@@ -58,10 +58,6 @@ export function setTimeout(callback, delay, ...arguments_) {
 					callback(...arguments_);
 				}
 			}, remainingDelay);
-
-			if (shouldUnref) {
-				timeout.id?.unref?.();
-			}
 		} else {
 			// Schedule next chunk
 			timeout.id = globalThis.setTimeout(() => {
@@ -69,10 +65,10 @@ export function setTimeout(callback, delay, ...arguments_) {
 				const remaining = Math.max(0, targetTime - now);
 				schedule(remaining);
 			}, MAX_TIMEOUT);
+		}
 
-			if (shouldUnref) {
-				timeout.id?.unref?.();
-			}
+		if (shouldUnref) {
+			timeout.id?.unref?.();
 		}
 	};
 
@@ -82,15 +78,20 @@ export function setTimeout(callback, delay, ...arguments_) {
 }
 
 export function clearTimeout(timeout) {
-	if (!timeout || typeof timeout !== 'object' || !timeout[brandSymbol]) {
+	// The brand is a plain `true`, so a truthy check would accept any truthy value.
+	if (!timeout || typeof timeout !== 'object' || timeout[brandSymbol] !== true) {
 		return;
 	}
 
 	timeout.cleared = true;
 
-	if (timeout.id !== undefined) {
-		globalThis.clearTimeout(timeout.id);
-		timeout.id = undefined;
+	// The handle is only set when a native timer was actually scheduled, which
+	// an infinite delay skips, so there is nothing to clear in that case.
+	const {id} = timeout;
+	timeout.id = undefined;
+
+	if (id !== undefined) {
+		globalThis.clearTimeout(id);
 	}
 }
 
@@ -122,7 +123,7 @@ export function setInterval(callback, delay, ...arguments_) {
 
 	// Treat delays beyond MAX_SAFE_INTEGER as Infinity (precision loss)
 	// and positive Infinity means wait forever (never fire)
-	if (delay === Number.POSITIVE_INFINITY || delay > Number.MAX_SAFE_INTEGER) {
+	if (delay === Infinity || delay > Number.MAX_SAFE_INTEGER) {
 		return interval;
 	}
 
@@ -155,10 +156,6 @@ export function setInterval(callback, delay, ...arguments_) {
 				// Now run user code — if it throws, the next tick still happens
 				callback(...arguments_);
 			}, remainingDelay);
-
-			if (shouldUnref) {
-				interval.id?.unref?.();
-			}
 		} else {
 			// Schedule next chunk
 			interval.id = globalThis.setTimeout(() => {
@@ -166,10 +163,10 @@ export function setInterval(callback, delay, ...arguments_) {
 				const nextDelay = Math.max(0, nextTargetTime - now);
 				schedule(nextDelay);
 			}, MAX_TIMEOUT);
+		}
 
-			if (shouldUnref) {
-				interval.id?.unref?.();
-			}
+		if (shouldUnref) {
+			interval.id?.unref?.();
 		}
 	};
 
@@ -179,14 +176,19 @@ export function setInterval(callback, delay, ...arguments_) {
 }
 
 export function clearInterval(interval) {
-	if (!interval || typeof interval !== 'object' || !interval[brandSymbol]) {
+	// The brand is a plain `true`, so a truthy check would accept any truthy value.
+	if (!interval || typeof interval !== 'object' || interval[brandSymbol] !== true) {
 		return;
 	}
 
 	interval.cleared = true;
 
-	if (interval.id !== undefined) {
-		globalThis.clearTimeout(interval.id);
-		interval.id = undefined;
+	// The handle is only set when a native timer was actually scheduled, which
+	// an infinite delay skips, so there is nothing to clear in that case.
+	const {id} = interval;
+	interval.id = undefined;
+
+	if (id !== undefined) {
+		globalThis.clearTimeout(id);
 	}
 }

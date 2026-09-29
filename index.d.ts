@@ -1,7 +1,7 @@
 /**
 Maximum safe timeout value for `setTimeout` in JavaScript (2^31-1 milliseconds). This is approximately 24.8 days.
 */
-// eslint-disable-next-line @typescript-eslint/naming-convention, unicorn/numeric-separators-style
+// eslint-disable-next-line unicorn/numeric-separators-style
 export const MAX_TIMEOUT: 2147483647;
 
 /**
@@ -150,3 +150,5 @@ clearInterval(interval);
 */
 // eslint-disable-next-line @typescript-eslint/no-restricted-types
 export function clearInterval(interval: Timeout | undefined | null): void;
+
+export {}; // eslint-disable-line unicorn/require-module-specifiers -- It stops the implicit export of the declarations without `export`.

@@ -8,20 +8,25 @@ import {
 	MAX_TIMEOUT,
 } from './index.js';
 
-test('setTimeout - basic timeout', async () => {
-	let called = false;
+// These tests wait on real timers that resolve in at most 100 ms, but a leaked
+// timer would keep the runner alive forever, because `node:test` has no default
+// per-test timeout. This is a hang guard, not a tolerance: no assertion depends on it.
+const testTimeout = 10_000;
+
+test('setTimeout - basic timeout', {timeout: testTimeout}, async () => {
+	let hasCalled = false;
 	setTimeout(() => {
-		called = true;
+		hasCalled = true;
 	}, 10);
 
 	await new Promise(resolve => {
 		globalThis.setTimeout(resolve, 50);
 	});
 
-	assert.equal(called, true);
+	assert.equal(hasCalled, true);
 });
 
-test('setTimeout - passes arguments to callback', async () => {
+test('setTimeout - passes arguments to callback', {timeout: testTimeout}, async () => {
 	let result;
 	setTimeout((a, b, c) => {
 		result = {a, b, c};
@@ -42,10 +47,10 @@ test('setTimeout - returns timeout object', () => {
 	clearTimeout(timeout);
 });
 
-test('setTimeout - can be cleared before execution', async () => {
-	let called = false;
+test('setTimeout - can be cleared before execution', {timeout: testTimeout}, async () => {
+	let hasCalled = false;
 	const timeout = setTimeout(() => {
-		called = true;
+		hasCalled = true;
 	}, 10);
 
 	clearTimeout(timeout);
@@ -54,46 +59,46 @@ test('setTimeout - can be cleared before execution', async () => {
 		globalThis.setTimeout(resolve, 50);
 	});
 
-	assert.equal(called, false);
+	assert.equal(hasCalled, false);
 });
 
-test('setTimeout - handles zero delay', async () => {
-	let called = false;
+test('setTimeout - handles zero delay', {timeout: testTimeout}, async () => {
+	let hasCalled = false;
 	setTimeout(() => {
-		called = true;
+		hasCalled = true;
 	}, 0);
 
 	await new Promise(resolve => {
 		globalThis.setTimeout(resolve, 50);
 	});
 
-	assert.equal(called, true);
+	assert.equal(hasCalled, true);
 });
 
-test('setTimeout - defaults to 0 when delay is undefined', async () => {
-	let called = false;
+test('setTimeout - defaults to 0 when delay is undefined', {timeout: testTimeout}, async () => {
+	let hasCalled = false;
 	setTimeout(() => {
-		called = true;
+		hasCalled = true;
 	});
 
 	await new Promise(resolve => {
 		globalThis.setTimeout(resolve, 50);
 	});
 
-	assert.equal(called, true);
+	assert.equal(hasCalled, true);
 });
 
-test('setTimeout - defaults to 0 when delay is null', async () => {
-	let called = false;
+test('setTimeout - defaults to 0 when delay is null', {timeout: testTimeout}, async () => {
+	let hasCalled = false;
 	setTimeout(() => {
-		called = true;
+		hasCalled = true;
 	}, null);
 
 	await new Promise(resolve => {
 		globalThis.setTimeout(resolve, 50);
 	});
 
-	assert.equal(called, true);
+	assert.equal(hasCalled, true);
 });
 
 test('setTimeout - simulates long delay by chunking', () => {
@@ -138,129 +143,125 @@ test('setTimeout - throws on non-function callback', () => {
 	);
 });
 
-test('setTimeout - coerces string delay to number', async () => {
-	let called = false;
+test('setTimeout - coerces string delay to number', {timeout: testTimeout}, async () => {
+	let hasCalled = false;
 	setTimeout(() => {
-		called = true;
+		hasCalled = true;
 	}, '50');
 
 	await new Promise(resolve => {
 		globalThis.setTimeout(resolve, 100);
 	});
 
-	assert.equal(called, true);
+	assert.equal(hasCalled, true);
 });
 
-test('setTimeout - coerces boolean true to 1ms', async () => {
-	let called = false;
+test('setTimeout - coerces boolean true to 1ms', {timeout: testTimeout}, async () => {
+	let hasCalled = false;
 	setTimeout(() => {
-		called = true;
+		hasCalled = true;
 	}, true);
 
 	await new Promise(resolve => {
 		globalThis.setTimeout(resolve, 50);
 	});
 
-	assert.equal(called, true);
+	assert.equal(hasCalled, true);
 });
 
-test('setTimeout - treats negative delay as 0 (immediate)', async () => {
-	let called = false;
+test('setTimeout - treats negative delay as 0 (immediate)', {timeout: testTimeout}, async () => {
+	let hasCalled = false;
 	setTimeout(() => {
-		called = true;
+		hasCalled = true;
 	}, -1);
 
 	await new Promise(resolve => {
 		globalThis.setTimeout(resolve, 50);
 	});
 
-	assert.equal(called, true);
+	assert.equal(hasCalled, true);
 });
 
-test('setTimeout - treats Infinity as never firing', async () => {
-	let called = false;
+test('setTimeout - treats Infinity as never firing', {timeout: testTimeout}, async () => {
+	let hasCalled = false;
 	const timeout = setTimeout(() => {
-		called = true;
-	}, Number.POSITIVE_INFINITY);
+		hasCalled = true;
+	}, Infinity);
 
 	await new Promise(resolve => {
 		globalThis.setTimeout(resolve, 50);
 	});
 
-	assert.equal(called, false);
+	assert.equal(hasCalled, false);
 	assert.equal(typeof timeout, 'object');
 	assert.equal(timeout.id, undefined);
 });
 
-test('setTimeout - treats negative Infinity as 0 (immediate)', async () => {
-	let called = false;
+test('setTimeout - treats negative Infinity as 0 (immediate)', {timeout: testTimeout}, async () => {
+	let hasCalled = false;
 	setTimeout(() => {
-		called = true;
-	}, Number.NEGATIVE_INFINITY);
+		hasCalled = true;
+	}, -Infinity);
 
 	await new Promise(resolve => {
 		globalThis.setTimeout(resolve, 50);
 	});
 
-	assert.equal(called, true);
+	assert.equal(hasCalled, true);
 });
 
 test('setTimeout - can clear Infinity timeout', () => {
 	const timeout = setTimeout(() => {
 		assert.fail('Should never be called');
-	}, Number.POSITIVE_INFINITY);
+	}, Infinity);
 
 	clearTimeout(timeout);
 	assert.equal(timeout.cleared, true);
 });
 
-test('setTimeout - treats NaN as 0 (immediate)', async () => {
-	let called = false;
+test('setTimeout - treats NaN as 0 (immediate)', {timeout: testTimeout}, async () => {
+	let hasCalled = false;
 	setTimeout(() => {
-		called = true;
-	}, Number.NaN);
+		hasCalled = true;
+	}, NaN);
 
 	await new Promise(resolve => {
 		globalThis.setTimeout(resolve, 50);
 	});
 
-	assert.equal(called, true);
+	assert.equal(hasCalled, true);
 });
 
-test('setTimeout - coerces string "abc" (NaN) to 0', async () => {
-	let called = false;
+test('setTimeout - coerces string "abc" (NaN) to 0', {timeout: testTimeout}, async () => {
+	let hasCalled = false;
 	setTimeout(() => {
-		called = true;
+		hasCalled = true;
 	}, 'abc');
 
 	await new Promise(resolve => {
 		globalThis.setTimeout(resolve, 50);
 	});
 
-	assert.equal(called, true);
+	assert.equal(hasCalled, true);
 });
 
 test('clearTimeout - handles undefined', () => {
-	assert.doesNotThrow(() => {
-		clearTimeout(undefined);
-	});
+	assert.equal(clearTimeout(undefined), undefined);
 });
 
 test('clearTimeout - handles null', () => {
-	assert.doesNotThrow(() => {
-		clearTimeout(null);
-	});
+	assert.equal(clearTimeout(null), undefined);
 });
 
 test('clearTimeout - can be called multiple times', () => {
 	const timeout = setTimeout(() => {}, 100);
 	clearTimeout(timeout);
-	assert.doesNotThrow(() => {
-		clearTimeout(timeout);
-	});
+	assert.equal(clearTimeout(timeout), undefined);
+	assert.equal(timeout.cleared, true);
+	assert.equal(timeout.id, undefined);
 });
 
-test('setInterval - basic interval', async () => {
+test('setInterval - basic interval', {timeout: testTimeout}, async () => {
 	let count = 0;
 	const interval = setInterval(() => {
 		count++;
@@ -274,7 +275,7 @@ test('setInterval - basic interval', async () => {
 	assert.ok(count >= 3);
 });
 
-test('setInterval - passes arguments to callback', async () => {
+test('setInterval - passes arguments to callback', {timeout: testTimeout}, async () => {
 	const results = [];
 	const interval = setInterval((a, b) => {
 		results.push({a, b});
@@ -297,7 +298,7 @@ test('setInterval - returns interval object', () => {
 	clearInterval(interval);
 });
 
-test('setInterval - can be cleared', async () => {
+test('setInterval - can be cleared', {timeout: testTimeout}, async () => {
 	let count = 0;
 	const interval = setInterval(() => {
 		count++;
@@ -317,7 +318,7 @@ test('setInterval - can be cleared', async () => {
 	assert.equal(count, countAtClear);
 });
 
-test('setInterval - defaults to 0 when delay is undefined', async () => {
+test('setInterval - defaults to 0 when delay is undefined', {timeout: testTimeout}, async () => {
 	let count = 0;
 	const interval = setInterval(() => {
 		count++;
@@ -331,7 +332,7 @@ test('setInterval - defaults to 0 when delay is undefined', async () => {
 	assert.ok(count >= 1);
 });
 
-test('setInterval - defaults to 0 when delay is null', async () => {
+test('setInterval - defaults to 0 when delay is null', {timeout: testTimeout}, async () => {
 	let count = 0;
 	const interval = setInterval(() => {
 		count++;
@@ -363,7 +364,7 @@ test('setInterval - throws on non-function callback', () => {
 	);
 });
 
-test('setInterval - treats negative delay as 0 (immediate)', async () => {
+test('setInterval - treats negative delay as 0 (immediate)', {timeout: testTimeout}, async () => {
 	let count = 0;
 	const interval = setInterval(() => {
 		count++;
@@ -377,11 +378,11 @@ test('setInterval - treats negative delay as 0 (immediate)', async () => {
 	assert.ok(count >= 1);
 });
 
-test('setInterval - treats Infinity as never firing', async () => {
+test('setInterval - treats Infinity as never firing', {timeout: testTimeout}, async () => {
 	let count = 0;
 	const interval = setInterval(() => {
 		count++;
-	}, Number.POSITIVE_INFINITY);
+	}, Infinity);
 
 	await new Promise(resolve => {
 		globalThis.setTimeout(resolve, 50);
@@ -393,11 +394,11 @@ test('setInterval - treats Infinity as never firing', async () => {
 	assert.equal(interval.id, undefined);
 });
 
-test('setInterval - treats NaN as 0 (immediate)', async () => {
+test('setInterval - treats NaN as 0 (immediate)', {timeout: testTimeout}, async () => {
 	let count = 0;
 	const interval = setInterval(() => {
 		count++;
-	}, Number.NaN);
+	}, NaN);
 
 	await new Promise(resolve => {
 		globalThis.setTimeout(resolve, 50);
@@ -407,7 +408,7 @@ test('setInterval - treats NaN as 0 (immediate)', async () => {
 	assert.ok(count >= 1);
 });
 
-test('setInterval - coerces string delay to number', async () => {
+test('setInterval - coerces string delay to number', {timeout: testTimeout}, async () => {
 	let count = 0;
 	const interval = setInterval(() => {
 		count++;
@@ -422,31 +423,26 @@ test('setInterval - coerces string delay to number', async () => {
 });
 
 test('clearInterval - handles undefined', () => {
-	assert.doesNotThrow(() => {
-		clearInterval(undefined);
-	});
+	assert.equal(clearInterval(undefined), undefined);
 });
 
 test('clearInterval - handles null', () => {
-	assert.doesNotThrow(() => {
-		clearInterval(null);
-	});
+	assert.equal(clearInterval(null), undefined);
 });
 
 test('clearInterval - can be called multiple times', () => {
 	const interval = setInterval(() => {}, 100);
 	clearInterval(interval);
-	assert.doesNotThrow(() => {
-		clearInterval(interval);
-	});
+	assert.equal(clearInterval(interval), undefined);
+	assert.equal(interval.cleared, true);
+	assert.equal(interval.id, undefined);
 });
 
-test('setTimeout - clears during chunk chain without calling callback', async () => {
-	let called = false;
+test('setTimeout - clears during chunk chain without calling callback', {timeout: testTimeout}, async () => {
+	let hasCalled = false;
 	// Use a very long delay that requires chunking
 	const timeout = setTimeout(() => {
-		called = true;
-		assert.fail('Callback should not be called');
+		hasCalled = true;
 	}, MAX_TIMEOUT * 2);
 
 	// Clear after a short time (during first chunk)
@@ -461,46 +457,38 @@ test('setTimeout - clears during chunk chain without calling callback', async ()
 		globalThis.setTimeout(resolve, 100);
 	});
 
-	assert.equal(called, false);
+	assert.equal(hasCalled, false);
 	assert.equal(timeout.cleared, true);
 });
 
-test('setTimeout - chunks long delays correctly', () => {
-	const originalSetTimeout = globalThis.setTimeout;
+test('setTimeout - chunks long delays correctly', t => {
 	const scheduledDelays = [];
+	const originalSetTimeout = globalThis.setTimeout;
 
-	// Stub globalThis.setTimeout to capture delays
-	globalThis.setTimeout = (callback, delay, ...arguments_) => {
+	// The implementation reads `globalThis.setTimeout` at call time, so wrapping
+	// it here is what lets the test observe every chunk it schedules.
+	t.mock.method(globalThis, 'setTimeout', (callback, delay, ...arguments_) => {
 		scheduledDelays.push(delay);
 		return originalSetTimeout(callback, delay, ...arguments_);
-	};
+	});
 
-	try {
-		// Schedule a very long timeout (3x MAX_TIMEOUT)
-		const longDelay = MAX_TIMEOUT * 3;
-		const timeout = setTimeout(() => {}, longDelay);
+	// Schedule a very long timeout (3x MAX_TIMEOUT)
+	const timeout = setTimeout(() => {}, MAX_TIMEOUT * 3);
 
-		// Verify no chunk exceeds MAX_TIMEOUT
-		for (const delay of scheduledDelays) {
-			assert.ok(delay <= MAX_TIMEOUT, `Chunk delay ${delay} exceeds MAX_TIMEOUT ${MAX_TIMEOUT}`);
-		}
+	// Should have scheduled at least one chunk
+	t.assert.ok(scheduledDelays.length > 0);
 
-		// Should have scheduled at least one chunk
-		assert.ok(scheduledDelays.length > 0);
+	// Verify no chunk exceeds MAX_TIMEOUT
+	t.assert.ok(scheduledDelays.every(delay => delay <= MAX_TIMEOUT), `A chunk exceeded MAX_TIMEOUT: ${scheduledDelays.join(', ')}`);
 
-		clearTimeout(timeout);
-	} finally {
-		// Restore original setTimeout
-		globalThis.setTimeout = originalSetTimeout;
-	}
+	clearTimeout(timeout);
 });
 
-test('setInterval - clears during chunk chain without calling callback', async () => {
+test('setInterval - clears during chunk chain without calling callback', {timeout: testTimeout}, async () => {
 	let count = 0;
 	// Use a very long delay that requires chunking
 	const interval = setInterval(() => {
 		count++;
-		assert.fail('Callback should not be called');
 	}, MAX_TIMEOUT * 2);
 
 	// Clear after a short time (during first chunk)
@@ -519,34 +507,27 @@ test('setInterval - clears during chunk chain without calling callback', async (
 	assert.equal(interval.cleared, true);
 });
 
-test('setInterval - chunks long delays correctly', () => {
-	const originalSetTimeout = globalThis.setTimeout;
+test('setInterval - chunks long delays correctly', t => {
 	const scheduledDelays = [];
+	const originalSetTimeout = globalThis.setTimeout;
 
-	// Stub globalThis.setTimeout to capture delays
-	globalThis.setTimeout = (callback, delay, ...arguments_) => {
+	// The implementation reads `globalThis.setTimeout` at call time, so wrapping
+	// it here is what lets the test observe every chunk it schedules.
+	t.mock.method(globalThis, 'setTimeout', (callback, delay, ...arguments_) => {
 		scheduledDelays.push(delay);
 		return originalSetTimeout(callback, delay, ...arguments_);
-	};
+	});
 
-	try {
-		// Schedule a very long interval (3x MAX_TIMEOUT)
-		const longDelay = MAX_TIMEOUT * 3;
-		const interval = setInterval(() => {}, longDelay);
+	// Schedule a very long interval (3x MAX_TIMEOUT)
+	const interval = setInterval(() => {}, MAX_TIMEOUT * 3);
 
-		// Verify no chunk exceeds MAX_TIMEOUT
-		for (const delay of scheduledDelays) {
-			assert.ok(delay <= MAX_TIMEOUT, `Chunk delay ${delay} exceeds MAX_TIMEOUT ${MAX_TIMEOUT}`);
-		}
+	// Should have scheduled at least one chunk
+	t.assert.ok(scheduledDelays.length > 0);
 
-		// Should have scheduled at least one chunk
-		assert.ok(scheduledDelays.length > 0);
+	// Verify no chunk exceeds MAX_TIMEOUT
+	t.assert.ok(scheduledDelays.every(delay => delay <= MAX_TIMEOUT), `A chunk exceeded MAX_TIMEOUT: ${scheduledDelays.join(', ')}`);
 
-		clearInterval(interval);
-	} finally {
-		// Restore original setTimeout
-		globalThis.setTimeout = originalSetTimeout;
-	}
+	clearInterval(interval);
 });
 
 test('setTimeout - ref/unref methods exist and return timeout', () => {
@@ -584,9 +565,9 @@ test('MAX_TIMEOUT is exported and has correct value', () => {
 	assert.equal(typeof MAX_TIMEOUT, 'number');
 });
 
-test('setInterval - survives thrown callback', async () => {
+test('setInterval - survives thrown callback', {timeout: testTimeout}, async () => {
 	let calls = 0;
-	let errorCaught = false;
+	let hasCaughtError = false;
 
 	const interval = setInterval(() => {
 		calls++;
@@ -596,7 +577,7 @@ test('setInterval - survives thrown callback', async () => {
 			try {
 				throw new Error('boom');
 			} catch {
-				errorCaught = true;
+				hasCaughtError = true;
 				// In real usage, this would be an uncaught exception
 				// but the interval would still continue ticking
 			}
@@ -610,7 +591,7 @@ test('setInterval - survives thrown callback', async () => {
 	clearInterval(interval);
 	// The key assertion: interval keeps ticking after the throw
 	assert.ok(calls >= 2, `Expected at least 2 calls, got ${calls}`);
-	assert.ok(errorCaught, 'Expected error to be thrown on first call');
+	assert.ok(hasCaughtError, 'Expected error to be thrown on first call');
 });
 
 test('setTimeout - Infinity never schedules native handle', () => {
@@ -725,11 +706,11 @@ test('clearInterval - sets id to undefined after clearing', () => {
 	assert.equal(interval.cleared, true);
 });
 
-test('setInterval - treats negative Infinity as 0 (immediate)', async () => {
+test('setInterval - treats negative Infinity as 0 (immediate)', {timeout: testTimeout}, async () => {
 	let count = 0;
 	const interval = setInterval(() => {
 		count++;
-	}, Number.NEGATIVE_INFINITY);
+	}, -Infinity);
 
 	await new Promise(resolve => {
 		globalThis.setTimeout(resolve, 50);
@@ -739,7 +720,7 @@ test('setInterval - treats negative Infinity as 0 (immediate)', async () => {
 	assert.ok(count >= 1);
 });
 
-test('setTimeout - unref persists across chunk rollovers', async () => {
+test('setTimeout - unref persists across chunk rollovers', () => {
 	// Create a very long timeout that will require chunking
 	const longDelay = MAX_TIMEOUT + 100;
 
@@ -747,20 +728,20 @@ test('setTimeout - unref persists across chunk rollovers', async () => {
 		// We won't actually wait for this
 	}, longDelay);
 
+	assert.equal(timeout.id.hasRef(), true);
+
 	// Call unref - this should persist across all chunks
 	timeout.unref();
 
-	// Verify the first chunk got unreffed
-	// (In real usage, this would allow Node to exit)
-	// We can't easily test the actual Node behavior, but we can verify
-	// the implementation applies unref
+	// The chunk that is currently scheduled is the one that must be unref'd
+	assert.equal(timeout.id.hasRef(), false);
 
 	// Clean up
 	clearTimeout(timeout);
 	assert.equal(timeout.cleared, true);
 });
 
-test('setInterval - unref persists across chunk rollovers', async () => {
+test('setInterval - unref persists across chunk rollovers', () => {
 	// Create a very long interval that will require chunking
 	const longDelay = MAX_TIMEOUT + 100;
 
@@ -768,10 +749,14 @@ test('setInterval - unref persists across chunk rollovers', async () => {
 		// Won't fire during test
 	}, longDelay);
 
+	assert.equal(interval.id.hasRef(), true);
+
 	// Call unref - this should persist across all chunks
 	interval.unref();
 
-	// Verify the first chunk got unreffed
+	// The chunk that is currently scheduled is the one that must be unref'd
+	assert.equal(interval.id.hasRef(), false);
+
 	// Clean up
 	clearInterval(interval);
 	assert.equal(interval.cleared, true);

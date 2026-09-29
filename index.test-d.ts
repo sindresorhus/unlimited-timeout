@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
-import {expectType} from 'tsd';
+/* eslint-disable @typescript-eslint/no-empty-function -- The tsd cases are about the call signatures, so the callbacks are intentionally empty. */
+import {expectTypeOf} from 'nz';
 import {
 	setTimeout,
 	clearTimeout,
@@ -11,27 +11,27 @@ import {
 } from './index.js';
 
 // eslint-disable-next-line unicorn/numeric-separators-style
-expectType<2147483647>(MAX_TIMEOUT);
+expectTypeOf(MAX_TIMEOUT).toBe<2147483647>();
 
 // SetTimeout
 const timeout = setTimeout(() => {}, 1000);
-expectType<Timeout>(timeout);
-expectType<TimerHandle | undefined>(timeout.id);
-expectType<boolean>(timeout.cleared);
-expectType<Timeout>(timeout.ref());
-expectType<Timeout>(timeout.unref());
+expectTypeOf(timeout).toBe<Timeout>();
+expectTypeOf(timeout.id).toBe<TimerHandle | undefined>();
+expectTypeOf(timeout.cleared).toBe<boolean>();
+expectTypeOf(timeout.ref()).toBe<Timeout>();
+expectTypeOf(timeout.unref()).toBe<Timeout>();
 
 // SetTimeout with arguments
-expectType<Timeout>(setTimeout((name: string, count: number) => {}, 1000, 'test', 42));
+expectTypeOf(setTimeout((name: string, count: number) => {}, 1000, 'test', 42)).toBe<Timeout>();
 
 // SetTimeout without delay
-expectType<Timeout>(setTimeout(() => {}));
+expectTypeOf(setTimeout(() => {})).toBe<Timeout>();
 
 // SetTimeout with long delay
-expectType<Timeout>(setTimeout(() => {}, 30 * 24 * 60 * 60 * 1000));
+expectTypeOf(setTimeout(() => {}, 30 * 24 * 60 * 60 * 1000)).toBe<Timeout>();
 
 // SetTimeout with Infinity
-expectType<Timeout>(setTimeout(() => {}, Infinity));
+expectTypeOf(setTimeout(() => {}, Infinity)).toBe<Timeout>();
 
 // ClearTimeout
 clearTimeout(timeout);
@@ -40,23 +40,23 @@ clearTimeout(null);
 
 // SetInterval
 const interval = setInterval(() => {}, 1000);
-expectType<Timeout>(interval);
-expectType<TimerHandle | undefined>(interval.id);
-expectType<boolean>(interval.cleared);
-expectType<Timeout>(interval.ref());
-expectType<Timeout>(interval.unref());
+expectTypeOf(interval).toBe<Timeout>();
+expectTypeOf(interval.id).toBe<TimerHandle | undefined>();
+expectTypeOf(interval.cleared).toBe<boolean>();
+expectTypeOf(interval.ref()).toBe<Timeout>();
+expectTypeOf(interval.unref()).toBe<Timeout>();
 
 // SetInterval with arguments
-expectType<Timeout>(setInterval((message: string, enabled: boolean) => {}, 1000, 'test', true));
+expectTypeOf(setInterval((message: string, isEnabled: boolean) => {}, 1000, 'test', true)).toBe<Timeout>();
 
 // SetInterval without delay
-expectType<Timeout>(setInterval(() => {}));
+expectTypeOf(setInterval(() => {})).toBe<Timeout>();
 
 // SetInterval with long delay
-expectType<Timeout>(setInterval(() => {}, 30 * 24 * 60 * 60 * 1000));
+expectTypeOf(setInterval(() => {}, 30 * 24 * 60 * 60 * 1000)).toBe<Timeout>();
 
 // SetInterval with Infinity
-expectType<Timeout>(setInterval(() => {}, Infinity));
+expectTypeOf(setInterval(() => {}, Infinity)).toBe<Timeout>();
 
 // ClearInterval
 clearInterval(interval);
